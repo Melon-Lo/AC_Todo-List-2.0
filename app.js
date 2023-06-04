@@ -4,6 +4,8 @@ const exphbs = require('express-handlebars')
 const app = express()
 const port = 3000
 
+const Todo = require('./models/todo')
+
 // 僅在非正式環境時，使用dotenv
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config()
@@ -25,8 +27,14 @@ db.once('open', () => { // only happen once
 app.engine('hbs', exphbs.engine({ defaultLayout: 'main', extname: '.hbs' }))
 app.set('view engine', 'hbs')
 
+// set dynamic routes
+
 app.get('/', (req, res) => {
-  res.render('index')
+  // get all todo data
+  Todo.find() // find all data from Todo model
+    .lean() // transfer Model in Mongoose into clean JavaScript data array
+    .then(todos => res.render('index', { todos })) // send data array to index template
+    .catch(error => console.error(error)) // if errors appear, catch them
 })
 
 app.listen(port, () => {
