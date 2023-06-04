@@ -31,14 +31,14 @@ app.set('view engine', 'hbs')
 
 app.use(bodyParser.urlencoded({ extended: true }))
 
-// set dynamic routes
+// set routes
 
 app.get('/', (req, res) => {
   // get all todo data
   Todo.find() // find all data from Todo model
     .lean() // transfer Model in Mongoose into clean JavaScript data array
     .then(todos => res.render('index', { todos })) // send data array to index template
-    .catch(error => console.error(error)) // if errors appear, catch them
+    .catch(error => console.log(error)) // if errors appear, catch them
 })
 
 app.get('/todos/new', (req, res) => {
@@ -51,6 +51,42 @@ app.post('/todos', (req, res) => {
 
   return todo.save()  // save in database
     .then(() => res.redirect('/')) // after adding, redirect to homepage
+    .catch(error => console.log(error))
+})
+
+app.get('/todos/:id', (req, res) => {
+  const id = req.params.id
+  Todo.findById(id)
+    .lean()
+    .then(todo => res.render('detail', { todo }))
+    .catch(error => console.log(error))
+})
+
+app.get('/todos/:id/edit', (req, res) => {
+  const id = req.params.id
+  return Todo.findById(id)
+    .lean()
+    .then(todo => res.render('edit', { todo }))
+    .catch(error => console.log(error))
+})
+
+app.post('/todos/:id/edit', (req, res) => {
+  const id = req.params.id
+  const name = req.body.name
+  return Todo.findById(id)
+    .then(todo => {
+      todo.name = name
+      return todo.save()
+    })
+    .then(() => res.redirect(`/todos/${id}`))
+    .catch(error => console.log(error))
+})
+
+app.post('/todos/:id/delete', (req, res) => {
+  const id = req.params.id
+  return Todo.findById(id)
+    .then(todo => todo.remove())
+    .then(() => res.redirect('/'))
     .catch(error => console.log(error))
 })
 
