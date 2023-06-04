@@ -1,6 +1,8 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const exphbs = require('express-handlebars')
+const bodyParser = require('body-parser')
+
 const app = express()
 const port = 3000
 
@@ -27,6 +29,8 @@ db.once('open', () => { // only happen once
 app.engine('hbs', exphbs.engine({ defaultLayout: 'main', extname: '.hbs' }))
 app.set('view engine', 'hbs')
 
+app.use(bodyParser.urlencoded({ extended: true }))
+
 // set dynamic routes
 
 app.get('/', (req, res) => {
@@ -35,6 +39,19 @@ app.get('/', (req, res) => {
     .lean() // transfer Model in Mongoose into clean JavaScript data array
     .then(todos => res.render('index', { todos })) // send data array to index template
     .catch(error => console.error(error)) // if errors appear, catch them
+})
+
+app.get('/todos/new', (req, res) => {
+  return res.render('new')
+})
+
+app.post('/todos', (req, res) => {
+  const name = req.body.name  // get name data from req.body
+  const todo = new Todo({ name })
+
+  return todo.save()  // save in database
+    .then(() => res.redirect('/')) // after adding, redirect to homepage
+    .catch(error => console.log(error))
 })
 
 app.listen(port, () => {
