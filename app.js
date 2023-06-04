@@ -85,7 +85,7 @@ app.post('/todos/:id/edit', (req, res) => {
 app.post('/todos/:id/delete', (req, res) => {
   const id = req.params.id
   return Todo.findById(id)
-    .then(todo => todo.remove())
+    .then(todo => todo.deleteOne()) // 原本教案裡面是給remove，但會失敗，應該是deprecated了
     .then(() => res.redirect('/'))
     .catch(error => console.log(error))
 })
